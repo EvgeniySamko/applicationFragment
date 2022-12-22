@@ -1,10 +1,14 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
 }
 
 android {
     compileSdk 32
+    flavorDimensions "default"
 
     defaultConfig {
         applicationId "com.example.applicationfragment"
@@ -15,13 +19,67 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    productFlavors {
+        create("free") {
+            applicationIdSuffix = ".free"
+        }
+        create("pro") {
+            applicationIdSuffix = ".pro"
         }
     }
+
+    buildTypes {
+        def someProperty1 = true
+        def someProperty2 = false
+
+        def should_encrypt_prefs_field_name = "SHOULD_ENCRYPT_PREFS"
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [
+                    crashLyticsCollectionEnabled: "true",
+                    applicationIdSuffix         : "",
+                    someProperty1               : someProperty1,
+                    someProperty2               : someProperty2
+            ]
+            buildConfigField "String", "APPLICATION_ID_SUFFIX", "\"\""
+            buildConfigField "boolean", "IS_ANALYTICS_ENABLED", "true"
+            buildConfigField "boolean", should_encrypt_prefs_field_name, "true"
+        }
+        staging {
+            debuggable true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [
+                    crashLyticsCollectionEnabled: "true",
+                    applicationIdSuffix         : ".staging",
+                    someProperty1               : someProperty1,
+                    someProperty2               : someProperty2
+            ]
+            applicationIdSuffix ".staging"
+            versionNameSuffix '-staging'
+            buildConfigField "String", "APPLICATION_ID_SUFFIX", "\".staging\""
+            buildConfigField "boolean", "IS_ANALYTICS_ENABLED", "true"
+            buildConfigField "boolean", should_encrypt_prefs_field_name, "true"
+        }
+        debug {
+            debuggable true
+            manifestPlaceholders = [
+                    crashLyticsCollectionEnabled: "false",
+                    applicationIdSuffix         : ".debug",
+                    someProperty1               : someProperty1,
+                    someProperty2               : someProperty2
+            ]
+            applicationIdSuffix ".debug"
+            versionNameSuffix '-debug'
+            buildConfigField "String", "APPLICATION_ID_SUFFIX", "\".debug\""
+            buildConfigField "boolean", "IS_ANALYTICS_ENABLED", "true"
+            buildConfigField "boolean", should_encrypt_prefs_field_name, "false"
+        }
+
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -29,15 +87,18 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-}
 
-dependencies {
+    dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+        implementation 'androidx.core:core-ktx:1.7.0'
+        implementation 'androidx.appcompat:appcompat:1.5.1'
+        implementation 'com.google.android.material:material:1.7.0'
+        implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+        testImplementation 'junit:junit:4.13.2'
+        androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+        androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+        def dagger_version = "2.40"
+        implementation "com.google.dagger:dagger:$dagger_version"
+        kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    }
 }
